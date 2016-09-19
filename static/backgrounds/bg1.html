@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TweenMax.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,700' rel='stylesheet' type='text/css'>
+</head>
+<module>
+  <style>
+    #bg-container {
+      font-family: Roboto;
+      height: 600px;
+      width: 300px;
+      font-size: 151px;
+      line-height: 97px;
+      word-wrap: break-word;
+      letter-spacing: -18px;
+      overflow: hidden;
+      background: red;
+      padding: 20px 10px;
+      box-sizing: border-box;
+    }
+
+    #bg-container span {
+      display:inline-block;
+      opacity: 0.5;
+    }
+  </style>
+
+  <body>
+
+    <div id="bg-container">
+      <span>B</span><span>A</span><span>C</span><span>K</span><span>G</span><span>R</span><span>O</span><span>U</span><span>N</span><span>D</span><span> </span><span>1</span>
+    </div>
+  </body>
+  <script>
+    console.log('bg1');
+    window.blah = document.body;
+    var tl = new TimelineLite;
+
+    tl.staggerFrom('#bg-container span', 3, {opacity:0, scale:2, rotationZ:45, y:80, transformOrigin:"50% 50%",  ease:Back.easeOut}, 0.2, "+=0");
+  </script>
+</module>

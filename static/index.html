@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>html loader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TweenMax.min.js"></script>
+  </head>
+  <style>
+    #adContainer {
+      position: relative;
+      height:600px;
+      width:300px;
+      background: gray;
+    }
+    #background {
+      display:block;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+    }
+
+    .button {
+      font-family:Arial;
+      position: relative;
+      width: 200px;
+      padding:5px;
+      text-align: center;
+      align-items: center;
+      background: blue;
+      color: white;
+      border-radius: 4px;
+      margin: 10px auto;
+      top:200px;
+      cursor: pointer;
+    }
+  </style>
+
+  <body unresolved>
+  <!-- <object type="text/html" data="elements/loader-main.html"></object> -->
+  <div id="adContainer">
+    <div id="background"></div>
+    <div id="btn1" class="button">Background 1</div>
+    <div id="btn2" class="button">Background 2</div>
+    <div id="btn3" class="button">Background 3</div>
+  </div>
+  </body>
+  <script>
+    console.log('index');
+
+    function loadHTML(url, target, callback){
+      var xhr= new XMLHttpRequest();
+      xhr.open('GET', url, true);
+
+      xhr.onreadystatechange = function() {
+        if (this.readyState!==4) return;
+        if (this.status!==200) return;
+
+        //target.innerHTML= this.responseText;
+
+        var res = this.responseText;
+        res = res.replace('/body>', '/module-body>').replace('<body', '<module-body'); // turn into module. innerHTML automatically removes body and 
+        res = res.replace('/head>', '/module-head>').replace('<head', '<module-head'); // turn into module. innerHTML automatically removes body and 
+
+        var scripts = getScripts(this.responseText);
+
+        window.res = res;
+
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = res;
+
+        var moduleStyle = tempDiv.getElementsByTagName('style')[0];
+        var moduleBody = tempDiv.getElementsByTagName('module-body')[0];
+        var moduleHead = tempDiv.getElementsByTagName('module-head')[0];
+        var moduleScript = tempDiv.getElementsByTagName('script')[1];
+
+        var firstScript = tempDiv.getElementsByTagName('script')[0].attributes.src.value;
+
+        console.log(firstScript);
+
+        window.css = moduleStyle;
+
+        window.mos = moduleScript;
+
+        target.innerHTML = (moduleBody.innerHTML+moduleHead.innerHTML);
+
+        target.appendChild(moduleStyle);
+        //document.body.appendChild(moduleScript);
+
+        var scriptElem = document.createElement('script');
+        scriptElem.text = moduleScript.innerHTML;
+        target.appendChild(scriptElem);
+        
+        callback ? callback() : false; // run callback if it exists
+
+        //var linkTag = document.createElement('link');
+        //linkTag.rel = 'import';
+        //linkTag.href = url;
+        
+        //document.getElementsByTagName('head')[0].appendChild(linkTag);
+      };
+
+      xhr.send();
+    }
+
+    function addCode(code){
+      
+    }
+
+    function stripScripts(s) {
+      var div = document.createElement('div');
+      div.innerHTML = s;
+      return div.getElementsByTagName('script');
+    }
+
+    function getScripts(s) {
+      var div = document.createElement('div');
+      div.innerHTML = s;
+      var scripts = div.getElementsByTagName('script');
+      var i = scripts.length;
+      while (i--) {
+        scripts[i].parentNode.removeChild(scripts[i]);
+      }
+      return div.innerHTML;
+    }
+
+    btn1.onclick = function(){
+      loadHTML('backgrounds/bg1.html', document.getElementById('background'));
+    };
+    btn2.onclick = function(){
+      loadHTML('backgrounds/bg2.html', document.getElementById('background'));
+    };
+    btn3.onclick = function(){
+      loadHTML('backgrounds/bg3.html', document.getElementById('background'));
+    };
+
+    function loadJS(file) {
+      // DOM: Create the script element
+      var jsElm = document.createElement("script");
+      // set the type attribute
+      jsElm.type = "application/javascript";
+      // make the script element load file
+      jsElm.src = file;
+      // finally insert the element to the body element in order to load the script
+      document.body.appendChild(jsElm);
+    }
+
+    
+    // Find: ([,|\}][\s$]*)([\.#]?-?[_a-zA-Z]+[_a-zA-Z0-9-]*)
+    // Replace with: $1#content $2
+
+    // Breakdown of Regex
+
+    // ([,|\}][\s$]*) - Finds the } or , from the previous style followed by whitespace (spaces/tabs: \s, newlines: $). The closing brace\comma keeps the regex from looking inside the body of your style.
+    // [\.#]? - Matches the starting # or . in the style name, if it is present.
+    // -?[_a-zA-Z]+ - CSS style names can start with an underscore or letters. Also, style names can be prepended by a dash.
+    // [_a-zA-Z0-9-]* - Matches the rest of the style name. This can be omitted, but it might be nice to know the style name of all the styles that were modified.
+    // $1#content $2 - The } (or ,) and whitespace is left the way it was found ($1). It is followed by your inserted text #content (note the space), which is then followed by the style name ($2).
+    // Improved upon RustyTheBoyRobot and BoltClock♦ answer to allow for comments and media queries.
+
+    // Find: ([,|\}][\s$]*)((?|\/\/.*[\s$]+|.*\/\*.*\*\/[\s$]*|@media.*\{[\s$]*|)*)([\.#]?-?[_a-zA-Z]+[_a-zA-Z0-9-]*)
+
+    // Replace with: $1$2 #content $3
+  </script>
+</html>
