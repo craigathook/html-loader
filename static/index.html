@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>html loader</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TweenMax.min.js"></script>
+    <script src="https://s0.2mdn.net/ads/studio/Enabler.js"> </script>
   </head>
   <style>
     #adContainer {
@@ -23,7 +23,7 @@
     .button {
       font-family:Arial;
       position: relative;
-      width: 200px;
+      width: 150px;
       padding:5px;
       text-align: center;
       align-items: center;
@@ -40,14 +40,14 @@
   <!-- <object type="text/html" data="elements/loader-main.html"></object> -->
   <div id="adContainer">
     <div id="background"></div>
-    <div id="btn1" class="button">Background 1</div>
-    <div id="btn2" class="button">Background 2</div>
-    <div id="btn3" class="button">Background 3</div>
+    <div id="btn1" class="button">BACKGROUND 1</div>
+    <div id="btn2" class="button">BACKGROUND 2</div>
+    <div id="btn3" class="button">BACKGROUND 3</div>
   </div>
   </body>
   <script>
     console.log('index');
-
+    var jsLoading = 0;
     function loadHTML(url, target, callback){
       var xhr= new XMLHttpRequest();
       xhr.open('GET', url, true);
@@ -69,35 +69,56 @@
         var tempDiv = document.createElement('div');
         tempDiv.innerHTML = res;
 
+        //target.innerHTML = res;
+
         var moduleStyle = tempDiv.getElementsByTagName('style')[0];
         var moduleBody = tempDiv.getElementsByTagName('module-body')[0];
         var moduleHead = tempDiv.getElementsByTagName('module-head')[0];
         var moduleScript = tempDiv.getElementsByTagName('script')[1];
 
-        var firstScript = tempDiv.getElementsByTagName('script')[0].attributes.src.value;
+        var headScripts = moduleHead.getElementsByTagName('script');
 
-        console.log(firstScript);
+        console.log("!",headScripts)
+        for(var h in headScripts){
+          var script = headScripts[h];
+          //console.log("?",script["attributes"]);
 
-        window.css = moduleStyle;
 
-        window.mos = moduleScript;
+          if(script["attributes"]){
+            console.log("?",script.attributes.src.value);
+            loadJS(script.attributes.src.value, function(){
 
-        target.innerHTML = (moduleBody.innerHTML+moduleHead.innerHTML);
 
-        target.appendChild(moduleStyle);
-        //document.body.appendChild(moduleScript);
+              //console.log(firstScript);
 
-        var scriptElem = document.createElement('script');
-        scriptElem.text = moduleScript.innerHTML;
-        target.appendChild(scriptElem);
+              window.css = moduleStyle;
+
+              window.mos = moduleScript;
+
+              target.innerHTML = (moduleBody.innerHTML+moduleHead.innerHTML);
+
+              target.appendChild(moduleStyle);
+              //document.body.appendChild(moduleScript);
+
+              var scriptElem = document.createElement('script');
+              scriptElem.text = moduleScript.innerHTML;
+              target.appendChild(scriptElem);
+
+              //loadJS(firstScript);
+              
+              callback ? callback() : false; // run callback if it exists
+
+              //var linkTag = document.createElement('link');
+              //linkTag.rel = 'import';
+              //linkTag.href = url;
+              
+              //document.getElementsByTagName('head')[0].appendChild(linkTag);
+
+            });
+          }
+        }
+
         
-        callback ? callback() : false; // run callback if it exists
-
-        //var linkTag = document.createElement('link');
-        //linkTag.rel = 'import';
-        //linkTag.href = url;
-        
-        //document.getElementsByTagName('head')[0].appendChild(linkTag);
       };
 
       xhr.send();
@@ -125,24 +146,32 @@
     }
 
     btn1.onclick = function(){
-      loadHTML('backgrounds/bg1.html', document.getElementById('background'));
+      loadHTML('bg1.html', document.getElementById('background'));
     };
     btn2.onclick = function(){
-      loadHTML('backgrounds/bg2.html', document.getElementById('background'));
+      loadHTML('bg2.html', document.getElementById('background'));
     };
     btn3.onclick = function(){
-      loadHTML('backgrounds/bg3.html', document.getElementById('background'));
+      loadHTML('bg3.html', document.getElementById('background'));
     };
 
-    function loadJS(file) {
+    function loadJS(file, callback) {
       // DOM: Create the script element
       var jsElm = document.createElement("script");
       // set the type attribute
       jsElm.type = "application/javascript";
       // make the script element load file
       jsElm.src = file;
+      jsLoading++;
+      jsElm.onload = function(){
+        jsLoading--;
+        if(jsLoading == 0) {
+          console.log('done');
+          callback ? callback() : false;
+        }
+      }
       // finally insert the element to the body element in order to load the script
-      document.body.appendChild(jsElm);
+      document.querySelector('#background').appendChild(jsElm);
     }
 
     

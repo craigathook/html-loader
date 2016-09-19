@@ -12,9 +12,9 @@
       font-size: 151px;
       line-height: 97px;
       word-wrap: break-word;
-      letter-spacing: -18px;
+      letter-spacing: -11px;
       overflow: hidden;
-      background: red;
+      background: green;
       padding: 20px 10px;
       box-sizing: border-box;
     }
@@ -32,10 +32,10 @@
     </div>
   </body>
   <script>
-    console.log('bg1');
+    console.log('bg2');
     window.blah = document.body;
     var tl = new TimelineLite;
 
-    tl.staggerFrom('#bg-container span', 3, {opacity:0, scale:2, rotationZ:45, y:80, transformOrigin:"50% 50%",  ease:Back.easeOut}, 0.2, "+=0");
+    tl.staggerFrom('#bg-container span', 3, {opacity:0, scale:2, rotationZ:135, y:80, transformOrigin:"50% 50%",  ease:Back.easeOut}, 0.2, "+=0");
   </script>
 </module>
