@@ -5,6 +5,7 @@
     <title>html loader</title>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no'>
     <script src='https://s0.2mdn.net/ads/studio/Enabler.js'> </script>
+    <script type="text/javascript" src="js/loader.js"></script>
   </head>
   <style>
     #adContainer {
@@ -40,11 +41,22 @@
   <!-- <object type='text/html' data='elements/loader-main.html'></object> -->
   <div id='adContainer'>
     <div id='background'></div>
-    <div id='btn1' class='button'>BACKGROUND 1</div>
-    <div id='btn2' class='button'>BACKGROUND 2</div>
-    <div id='btn3' class='button'>BACKGROUND 3</div>
+    <div id='btn1' class='button'>LOAD BACKGROUND</div>
+    <!-- <div id='btn2' class='button'>BACKGROUND 2</div> -->
+    <!-- <div id='btn3' class='button'>BACKGROUND 3</div> -->
   </div>
   </body>
-  <script src='js/vendor.js'> </script>
-  <script src='js/main.build.js'> </script>
+  <script>
+      document.body.style.opacity = 0;
+      if (Enabler.isInitialized()) {
+        init();
+      } else {
+        Enabler.addEventListener(studio.events.StudioEvent.INIT, init);
+      }
+      function init() {
+        document.body.style.opacity = 1;
+        LoadScriptList (['./js/vendor','./js/main.build'],function () {console.log ("all scripts loaded")} )
+      }
+  </script>
+
 </html>

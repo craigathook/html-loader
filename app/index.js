@@ -2,16 +2,20 @@
 
 var config = require('./config');
 var htmlLoader = require('./HTMLLoader/HTMLLoader')
+var Model = require('./Model.js');
+
+var model = Model.getInstance();
 
 btn1.onclick = function(){
-  htmlLoader.load('bg1.html', document.getElementById('background'));
+	
+  htmlLoader.load(model.background, document.getElementById('background'));
 };
-btn2.onclick = function(){
-  htmlLoader.load('bg2.html', document.getElementById('background'));
-};
-btn3.onclick = function(){
-  htmlLoader.load('bg3.html', document.getElementById('background'));
-};
+// btn2.onclick = function(){
+//   htmlLoader.load('bg2.html', document.getElementById('background'));
+// };
+// btn3.onclick = function(){
+//   htmlLoader.load('bg3.html', document.getElementById('background'));
+// };
 
 // Find: ([,|\}][\s$]*)([\.#]?-?[_a-zA-Z]+[_a-zA-Z0-9-]*)
 // Replace with: $1#content $2
