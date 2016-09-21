@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <title>html loader</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://s0.2mdn.net/ads/studio/Enabler.js"> </script>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <script src='https://s0.2mdn.net/ads/studio/Enabler.js'> </script>
   </head>
   <style>
     #adContainer {
@@ -37,17 +37,18 @@
   </style>
 
   <body unresolved>
-  <!-- <object type="text/html" data="elements/loader-main.html"></object> -->
-  <div id="adContainer">
-    <div id="background"></div>
-    <div id="btn1" class="button">BACKGROUND 1</div>
-    <div id="btn2" class="button">BACKGROUND 2</div>
-    <div id="btn3" class="button">BACKGROUND 3</div>
+  <!-- <object type='text/html' data='elements/loader-main.html'></object> -->
+  <div id='adContainer'>
+    <div id='background'></div>
+    <div id='btn1' class='button'>BACKGROUND 1</div>
+    <div id='btn2' class='button'>BACKGROUND 2</div>
+    <div id='btn3' class='button'>BACKGROUND 3</div>
   </div>
   </body>
   <script>
     console.log('index');
-    var jsLoading = 0;
+    var assetsLoading = 0;
+
     function loadHTML(url, target, callback){
       var xhr= new XMLHttpRequest();
       xhr.open('GET', url, true);
@@ -56,11 +57,13 @@
         if (this.readyState!==4) return;
         if (this.status!==200) return;
 
-        //target.innerHTML= this.responseText;
-
+        var timeStamp = new Date().getTime();
+        
         var res = this.responseText;
-        res = res.replace('/body>', '/module-body>').replace('<body', '<module-body'); // turn into module. innerHTML automatically removes body and 
-        res = res.replace('/head>', '/module-head>').replace('<head', '<module-head'); // turn into module. innerHTML automatically removes body and 
+
+        // turn into module. innerHTML automatically removes body and head tags if they aren't renamed.
+        res = res.replace('/body>', '/body'+timeStamp+'>').replace('<body', '<body'+timeStamp); 
+        res = res.replace('/head>', '/head'+timeStamp+'>').replace('<head', '<head'+timeStamp);
 
         var scripts = getScripts(this.responseText);
 
@@ -69,57 +72,75 @@
         var tempDiv = document.createElement('div');
         tempDiv.innerHTML = res;
 
-        //target.innerHTML = res;
-
         var moduleStyle = tempDiv.getElementsByTagName('style')[0];
-        var moduleBody = tempDiv.getElementsByTagName('module-body')[0];
-        var moduleHead = tempDiv.getElementsByTagName('module-head')[0];
-        var moduleScript = tempDiv.getElementsByTagName('script')[1];
+        var moduleBody = tempDiv.getElementsByTagName('body'+timeStamp)[0];
+        var moduleHead = tempDiv.getElementsByTagName('head'+timeStamp)[0];
+        var moduleScripts = tempDiv.getElementsByTagName('script');
+        var moduleImages = tempDiv.getElementsByTagName('img');
 
-        var headScripts = moduleHead.getElementsByTagName('script');
+        console.log('moduleScripts',moduleScripts)
 
-        console.log("!",headScripts)
-        for(var h in headScripts){
-          var script = headScripts[h];
-          //console.log("?",script["attributes"]);
+        var scripts = [];
+        var images = [];
+        var assets = [];
+        var scriptElements = [];
 
+        for(var s in moduleScripts){ // could be refactored into getSourceFromElements
+          var scriptElement = moduleScripts[s];
 
-          if(script["attributes"]){
-            console.log("?",script.attributes.src.value);
-            loadJS(script.attributes.src.value, function(){
+          if(scriptElement['attributes']){
+            if(scriptElement['attributes']['src']) {
+              scripts.push(scriptElement.attributes.src.value);
+            } else {
+              console.log('sadsadsdasa', scriptElement)
+              scriptElements.push(scriptElement);
+            }
+          } 
+        }
 
+        for(var i in moduleImages){
+          var imgElement = moduleImages[i];
 
-              //console.log(firstScript);
-
-              window.css = moduleStyle;
-
-              window.mos = moduleScript;
-
-              target.innerHTML = (moduleBody.innerHTML+moduleHead.innerHTML);
-
-              target.appendChild(moduleStyle);
-              //document.body.appendChild(moduleScript);
-
-              var scriptElem = document.createElement('script');
-              scriptElem.text = moduleScript.innerHTML;
-              target.appendChild(scriptElem);
-
-              //loadJS(firstScript);
-              
-              callback ? callback() : false; // run callback if it exists
-
-              //var linkTag = document.createElement('link');
-              //linkTag.rel = 'import';
-              //linkTag.href = url;
-              
-              //document.getElementsByTagName('head')[0].appendChild(linkTag);
-
-            });
+          if(imgElement['attributes']){
+            if(imgElement['attributes']['src']) {
+              images.push(imgElement.attributes.src.value);
+            }
           }
         }
 
-        
-      };
+        console.log(scripts, images);
+
+        assets = assets.concat(scripts, images);
+
+        console.log(assets);
+
+        for(var a in assets){
+          loadAsset(assets[a], function(){
+
+          target.innerHTML = (moduleBody.innerHTML+moduleHead.innerHTML);
+          target.appendChild(moduleStyle); 
+
+          console.log('scriptElements',scriptElements)
+
+          for(var e in scriptElements) { // add all inline javascript
+            console.log(">",scriptElement);
+            var scriptElement = scriptElements[e];
+            var newElement = document.createElement('script');
+            newElement.text = scriptElement.innerHTML;
+            target.appendChild(newElement);
+          }
+
+          callback ? callback() : false; // run callback if it exists
+
+          //var linkTag = document.createElement('link');
+          //linkTag.rel = 'import';
+          //linkTag.href = url;
+
+          //document.getElementsByTagName('head')[0].appendChild(linkTag);
+
+          });
+        }
+      }
 
       xhr.send();
     }
@@ -155,23 +176,53 @@
       loadHTML('bg3.html', document.getElementById('background'));
     };
 
-    function loadJS(file, callback) {
-      // DOM: Create the script element
-      var jsElm = document.createElement("script");
-      // set the type attribute
-      jsElm.type = "application/javascript";
-      // make the script element load file
-      jsElm.src = file;
-      jsLoading++;
-      jsElm.onload = function(){
-        jsLoading--;
-        if(jsLoading == 0) {
-          console.log('done');
+    function loadAsset(file, callback) {
+
+      var loadingContainer = document.createElement('div');
+      loadingContainer.style.display = 'none';
+
+      document.body.appendChild(loadingContainer);
+
+      var element = null;
+      var elementType = null;
+
+      var isImage = (file.indexOf('.png') + file.indexOf('.gif') + file.indexOf('.jpg') + file.indexOf('.jpeg') + file.indexOf('.svg')) > -1;
+      var isJavaScript = file.indexOf('.js') > -1;
+
+      if(isJavaScript) {
+
+        element = document.createElement('script');
+        element.type = 'application/javascript';
+        
+      }
+
+      if(isImage) {
+
+        element = document.createElement('img');
+        
+      }
+
+      element.src = file;
+
+      loadingContainer.appendChild(element);
+
+      assetsLoading++;
+
+      element.onload = function(){
+
+        assetsLoading--;
+        if(assetsLoading == 0) {
+
+          console.log('All Assets Loaded.');
           callback ? callback() : false;
+
+          loadingContainer.parentNode.removeChild(loadingContainer);
+
         }
+
       }
       // finally insert the element to the body element in order to load the script
-      document.querySelector('#background').appendChild(jsElm);
+
     }
 
     
