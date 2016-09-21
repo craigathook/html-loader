@@ -1,5 +1,6 @@
 var assetLoader = require('./AssetLoader')
 
+
 function HTMLModule(){
   this.target = null;
   this.id = new Date().getTime();
@@ -49,13 +50,13 @@ function HTMLLoader(){
     var tempDiv = document.createElement('div');
     tempDiv.innerHTML = res;
 
-    var scripts = tempDiv.querySelectorAll('script');
-    var images = tempDiv.querySelectorAll('img');
+    var scripts = toArray( tempDiv.querySelectorAll('script') );
+    var images = toArray( tempDiv.querySelectorAll('img') );
 
     module.body = tempDiv.querySelectorAll('body'+module.id)[0];
     module.head = tempDiv.querySelectorAll('head'+module.id)[0];
-    module.styleElements = tempDiv.querySelectorAll('style');
-    module.linkElements = tempDiv.querySelectorAll('link');
+    module.styleElements = toArray( tempDiv.querySelectorAll('style') );
+    module.linkElements = toArray( tempDiv.querySelectorAll('link') );
     
     scripts.forEach(function(elem){// could be refactored into getSourceFromElements
       var scriptElement = elem;
@@ -115,6 +116,10 @@ function HTMLLoader(){
       });
     }
   }
+}
+
+function toArray(object){
+  return [].slice.call(object);
 }
 
 module.exports = new HTMLLoader();
