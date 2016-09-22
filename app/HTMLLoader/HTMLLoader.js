@@ -9,6 +9,7 @@ function HTMLModule(){
   this.assets = [];
   this.scripts = [];
   this.images = [];
+  this.links = [];
   this.styleElements = [];
   this.scriptElements = [];
   this.linkElements = [];
@@ -16,12 +17,15 @@ function HTMLModule(){
 
 function HTMLLoader(){
   //console.log('HTMLLoader');
-
+  var basepath = '';
   var self = this;
 
-  this.load = function(url, target, callback){
-    var xhr= new XMLHttpRequest();
-    xhr.open('GET', url, true);
+  this.load = function(url, target, callback, rootPath){
+    basepath = rootPath || basepath;
+    target.style.display = 'none';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', basepath+url, true);
 
     xhr.onreadystatechange = function() {
       if (this.readyState!==4) return;
@@ -52,44 +56,77 @@ function HTMLLoader(){
 
     var scripts = toArray( tempDiv.querySelectorAll('script') );
     var images = toArray( tempDiv.querySelectorAll('img') );
+    var links = toArray( tempDiv.querySelectorAll('link') );
 
     module.body = tempDiv.querySelectorAll('body'+module.id)[0];
     module.head = tempDiv.querySelectorAll('head'+module.id)[0];
     module.styleElements = toArray( tempDiv.querySelectorAll('style') );
-    module.linkElements = toArray( tempDiv.querySelectorAll('link') );
     
-    scripts.forEach(function(elem){// could be refactored into getSourceFromElements
-      var scriptElement = elem;
-      if(scriptElement['attributes']){
-        if(scriptElement['attributes']['src']) {
-          module.scripts.push(scriptElement.attributes.src.value);
-        } else {
-          module.scriptElements.push(scriptElement);
-        }
+    
+    scripts.forEach(function(elem){
+      var path = self.getPathFromElement(elem);
+      if(path){
+        module.scripts.push(path);
+        module.assets.push({type:'js', path:path});
+      } else { // these must be inline scripts. lets just grab the whole element then.
+        module.scriptElements.push(elem);
       }
     }); 
 
-    images.forEach(function(elem){// could be refactored into getSourceFromElements
-      var imgElement = elem;
-
-      if(imgElement['attributes']){
-        if(imgElement['attributes']['src']) {
-          module.images.push(imgElement.attributes.src.value);
-        }
+    images.forEach(function(elem){
+      var path = self.getPathFromElement(elem);
+      if(path){
+        module.images.push(path);
+        module.assets.push({type:'img', path:path});
+        elem.attributes.src.value = path; // before this gets added to the dom, lets make sure it's loading the img from the same root path as the html file.
       }
     });
 
-    //console.log(module.scripts, module.images);
+    links.forEach(function(elem){// lets make sure the link elements have an href, and if they do, lets also make sure the href is an absolute path.
+      var path = self.getPathFromElement(elem); // check for path, and convert to absolute path if it isn't.
+      var type = '';
+      if(path){
+        module.links.push(path);
+        elem.attributes.href.value = path;
 
-    module.assets = module.assets.concat(module.scripts, module.images);
+        if(elem.attributes.rel.value == 'import') {
+          type = 'html'
+        }
+        if(elem.attributes.rel.value == 'stylesheet') {
+          type = 'css'
+        }
+
+        module.assets.push({type:type, path:path});
+        module.linkElements.push(elem);
+      }
+      
+    });
 
     this.loadModule(module);
 
   }
 
+  this.getPathFromElement = function(element){
+    var path = null;
+    if(element['attributes']){
+      var pathAttribute = element['attributes']['src'] ? 'src' : 'href';
+      if(element['attributes'][pathAttribute]) {
+        
+        path = element.attributes[pathAttribute].value;
+        var isAbsolutePath = path.indexOf('//') != -1;
+        
+        if(isAbsolutePath == false) {
+          path = basepath + path;
+        }
+      }
+    }
+
+    return path;
+  }
+
   this.loadModule = function(module, callback){
     for(var a in module.assets){
-      assetLoader.load(module.assets[a], function(){ // fires when all assets are loaded
+      assetLoader.load(module.assets[a].path, module.assets[a].type, function(){ // fires when all assets are loaded
 
         module.target.innerHTML = module.body.innerHTML;
 
@@ -111,6 +148,7 @@ function HTMLLoader(){
           module.target.appendChild(linkElement);
         });
 
+        module.target.style.display = 'block';
         callback ? callback() : false; // run callback if it exists
 
       });

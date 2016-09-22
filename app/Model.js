@@ -10,6 +10,9 @@ var Model = function() {
     devDynamicContent.HTMLLoader_Test_Sheet1[0].ID = 0;
     devDynamicContent.HTMLLoader_Test_Sheet1[0].Reporting_Label = "bg1";
     devDynamicContent.HTMLLoader_Test_Sheet1[0].Background = "bg1.html";
+    devDynamicContent.Profile= [{}];
+    devDynamicContent.Profile[0]._id = 0;
+    devDynamicContent.Profile[0].BasePath = "https:\/\/s0.2mdn.net\/ads\/richmedia\/studio\/45581506\/";
 
     if(window.previewDynamicContent) { 
         devDynamicContent.TEMP_FEED_NAME[0] = window.previewDynamicContent;
@@ -19,8 +22,7 @@ var Model = function() {
     Enabler.setDevDynamicContent(devDynamicContent);
 
     this.background = dynamicContent.HTMLLoader_Test_Sheet1[0].Background;
-
-    var basepath = "https://s0.2mdn.net/ads/richmedia/studio/42717301/";
+    this.basepath = devDynamicContent.Profile[0].BasePath;
 
 };
 

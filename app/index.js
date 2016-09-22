@@ -8,7 +8,7 @@ var model = Model.getInstance();
 
 btn1.onclick = function(){
 	
-  htmlLoader.load(model.background, document.getElementById('background'));
+  htmlLoader.load(model.background, document.getElementById('background'), function(){}, model.basepath);
 };
 // btn2.onclick = function(){
 //   htmlLoader.load('bg2.html', document.getElementById('background'));

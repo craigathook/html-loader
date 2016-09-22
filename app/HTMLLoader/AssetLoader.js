@@ -2,7 +2,7 @@ var assetsLoading = 0;
 
 function AssetLoader(){
   //console.log('AssetLoader');
-  this.load = function(file, callback) {
+  this.load = function(file, type, callback) {
 
     var loadingContainer = document.querySelector('#AssetLoaderContainer') || document.createElement('div');
     loadingContainer.id = 'AssetLoaderContainer';
@@ -15,21 +15,41 @@ function AssetLoader(){
 
     var isImage = (file.indexOf('.png') + file.indexOf('.gif') + file.indexOf('.jpg') + file.indexOf('.jpeg') + file.indexOf('.svg')) > -1;
     var isJavaScript = file.indexOf('.js') > -1;
+    var isCSS = type == 'css';
+    var isHTML = type == 'html';
 
     if(isJavaScript) {
 
       element = document.createElement('script');
       element.type = 'application/javascript';
+      element.src = file;
       
     }
-
+  
     if(isImage) {
 
       element = document.createElement('img');
-      
+      element.src = file;
     }
 
-    element.src = file;
+    if(isCSS) {
+
+      element = document.createElement('link')
+      element.setAttribute('rel', 'stylesheet')
+      element.setAttribute('type', 'text/css')
+      element.setAttribute('href', file);
+
+    }
+
+    if(isHTML) {
+
+      element = document.createElement('link')
+      element.setAttribute('rel', 'import')
+      element.setAttribute('href', file);
+
+    }
+
+    
     loadingContainer.appendChild(element);
     assetsLoading++;
 
