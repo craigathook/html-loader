@@ -4,6 +4,8 @@ function AssetLoader(){
   //console.log('AssetLoader');
   this.load = function(file, type, callback) {
 
+    // console.log('AssetLoader url:',file);
+
     var loadingContainer = document.querySelector('#AssetLoaderContainer') || document.createElement('div');
     loadingContainer.id = 'AssetLoaderContainer';
     loadingContainer.style.display = 'none';
@@ -65,7 +67,7 @@ function AssetLoader(){
 
       }
     }
-  }
+  };
 }
 
 module.exports = new AssetLoader();
